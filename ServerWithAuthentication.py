@@ -68,7 +68,7 @@ def recv():
                                 conn.send(error_msg)
                             else:
                                 pass
-                if msg.startswith('!register'):
+                elif msg.startswith('!register'):
                     stop = False
                     msg = msg.split()
                     flag = 0
@@ -97,8 +97,46 @@ def recv():
                         file.writelines(file_contents)
                         file.close()
                         if flag == 1:
-                            msg = f"Successfully registed. Welcome, {new_user}!".encode('utf-8')
+                            msg = f"Successfully registered. Welcome, {new_user}!".encode('utf-8')
                             conn.send(msg)
+                elif msg.startswith('!reregister'):
+                    flag = 0
+                    msg = msg.split()
+                    try:
+                        username = msg[1]
+                        old_pass = msg[2]
+                        new_pass = msg[3]
+                    except:
+                        error_msg = 'Invalid Arguements!\nUsage: !register <username> <old_password> <new_password>'.encode('utf-8')
+                        conn.send(error_msg)
+                    file = open('username_passwords.txt','r')
+                    file_contents = file.readlines()
+                    file.close()
+                    item = 0
+                    for line in file_contents:
+                        if username in line:
+                            info = line
+                            break
+                        else:
+                            pass
+                        item += 1
+                    info = info.split()
+                    password = info[1]
+                    old_pass = hashlib.md5(old_pass.encode()).hexdigest()
+                    if old_pass == password:
+                        flag = 1
+                    else:
+                        flag = 0
+                    if flag == 1:
+                        password = new_pass
+                        new_pass = hashlib.md5(new_pass.encode()).hexdigest()
+                        file_contents.remove(file_contents[item])
+                        file_contents.extend(f'\n{username} {new_pass}')
+                        file.close()
+                        file = open('username_passwords.txt','w')
+                        file.writelines(file_contents)
+                        msg = f'Hello {username}, you have changed your password to: {password}'.encode()
+                        conn.send(msg)
             except:
                 pass
 def conn_checker():
