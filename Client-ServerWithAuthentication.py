@@ -1,4 +1,4 @@
-import socket, threading
+import socket, threading, sys
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 while True:
     try:
@@ -8,7 +8,7 @@ while True:
         break
     except:
         print("\n[+] Invalid IP or Port.\n")
-commands_list = ['!register','!login','!reregister']
+commands_list = ['!reregister','!send','!broadcast','!listusers']
 print("[+] Connected to the server.......\n")
 login = False
 register = True
@@ -60,21 +60,24 @@ def instruct():
                 instruction = input("[+] What is the instruction: ")
                 try:
                     insplit = instruction.split()
+                    instruction = f"{username} {instruction}"
                     if insplit[0] in commands_list:
                         try:
                             s.send(instruction.encode('utf-8'))
                         except:
                             print("[+] Your Connection has been Terminated by the host.")
                             input("\n[+] Press 'enter' to exit.")
-                            quit()
+                            s.close()
+                            sys.exit()
                 except:
-                    print("[+] Your message is invalid!")
+                    print("\n[+] Your message is invalid!")
         except:
             pass
 def recv():
     while True:
         try:
-            msg = s.recv(1024).decode('utf-8')
+            msg = s.recv(1024)
+            msg = msg.decode('utf-8')
             if msg == "":
                 pass
             else:
